@@ -4,23 +4,13 @@ import {RESOURCE_MANAGER} from "./io/resourceManager.js";
 import {Quaternion} from "../threejs/build/three.module.js";
 import {CSM} from "../threejs/examples/jsm/csm/CSM.js";
 import {CSMHelper} from "../threejs/examples/jsm/csm/CSMHelper.js";
-import {Plane} from "./objects/plane.js";
+import {Drone, createDroneModel} from "./objects/drone.js";
 
 export { DevGamemode }
 
 function createPlane(scene) {
-    RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
-        if (child.isMesh) {
-            child.material.metalness = 0;
-            child.material.roughness = 1;
-            if (child.name !== "CanopyGlass") {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        }
-    });
-    scene.add(RESOURCE_MANAGER.modele_F16.scene);
-    return new Plane(scene, RESOURCE_MANAGER.modele_F16.scene, false);
+    // Instead of using the F-16 model, create a procedurally generated drone
+    return new Drone(scene, false);
 }
 
 class DevGamemode {

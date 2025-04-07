@@ -3,7 +3,9 @@ export {World};
 import * as THREE from '../threejs/build/three.module.js';
 import {Landscape} from './rendering/landscape.js'
 import {Plane} from "./objects/plane.js";
+import {Drone, createDroneModel} from "./objects/drone.js";
 import {FoliageSystem} from "./rendering/foliageSystem.js";
+import {getHeightAtLocation} from "./rendering/HeightGenerator.js";
 
 
 
@@ -21,8 +23,8 @@ class World {
 		this.scene.add(this.ambiantLight);
 		this.scene.add(this.directionalLight);
 
-		// Create heightmap generator
-		this.heightGenerator = new HeightGenerator();
+		// Set heightmap generator function
+		this.heightGenerator = { getHeightAtLocation };
 
 		// Create foliage system
 		this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
@@ -59,9 +61,9 @@ class World {
 	}
 
 	addPlane(mesh) {
-		this.scene.add(mesh);
-		const plane = new Plane(this.scene, mesh, true);
-		this.planes.push(plane);
-		return plane;
+		// Create a drone instead of using the provided mesh
+		const drone = new Drone(this.scene, true);
+		this.planes.push(drone);
+		return drone;
 	}
 }

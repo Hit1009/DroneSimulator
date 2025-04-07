@@ -2,6 +2,7 @@ import * as THREE from "../threejs/build/three.module.js";
 import {PlaneController} from "./io/planeController.js";
 import {RESOURCE_MANAGER} from "./io/resourceManager.js";
 import {Plane} from "./objects/plane.js";
+import {Drone, createDroneModel} from "./objects/drone.js";
 import {FoliageSystem} from "./rendering/foliageSystem.js";
 import {Landscape} from "./rendering/landscape.js";
 import {enableMouseCapture} from "./io/inputManager.js";
@@ -16,18 +17,8 @@ export { DefaultGamemode }
 
 
 function createPlane(scene) {
-    RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
-        if (child.isMesh) {
-            child.material.metalness = 0;
-            child.material.roughness = 1;
-            if (child.name !== "CanopyGlass") {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        }
-    });
-    scene.add(RESOURCE_MANAGER.modele_F16.scene);
-    return new Plane(scene, RESOURCE_MANAGER.modele_F16.scene, false);
+    // Instead of using the F-16 model, create a procedurally generated drone
+    return new Drone(scene, false);
 }
 
 class DefaultGamemode {
