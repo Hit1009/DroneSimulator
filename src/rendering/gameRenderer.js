@@ -158,11 +158,7 @@ class GameRenderer {
 
         if (gamemode.setMaterialCsmShadows) gamemode.setMaterialCsmShadows(this.csm);
 
-        this.gui = new GUI();
-        const sunFolder = this.gui.addFolder("sun");
-        sunFolder.add(gamemode.sunDirectionVector, 'x', -1, 1).name('X').listen();
-        sunFolder.add(gamemode.sunDirectionVector, 'y', -1, 1).name('Y').listen();
-        sunFolder.add(gamemode.sunDirectionVector, 'z', -1, 1).name('Z').listen();
+        
     }
 
     render = function(gamemode) {

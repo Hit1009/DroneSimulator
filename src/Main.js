@@ -1,4 +1,3 @@
-import Stats from '../threejs/examples/jsm/libs/stats.module.js'
 import {RESOURCE_MANAGER} from './io/resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {
@@ -16,7 +15,7 @@ import {OPTION_MANAGER} from "./io/optionManager.js";
 import {SAVEGAME} from "./io/saveGame.js";
 export {releaseRenderer}
 
-let isReady = false, clock, stats, gamemode, gameRenderer;
+let isReady = false, clock, gamemode, gameRenderer;
 
 /**
  * OPTIONS
@@ -104,7 +103,8 @@ addKeyInput("Roll", "KeyE", 1, 0);
 addKeyInput("Roll", "KeyQ", -1, 0);
 addKeyInput("Yaw", "KeyA", 1, 0);
 addKeyInput("Yaw", "KeyD", -1, 0);
-addMouseAxisInput("Throttle", 3, 1);
+addKeyInput("Throttle", "PageUp", -1, 0);
+addKeyInput("Throttle", "PageDown", 1, 0);
 addMouseAxisInput("LookUp", 2, -1);
 addMouseAxisInput("LookRight", 1, -1);
 
@@ -180,10 +180,6 @@ function init() {
     // Setup clock
     clock = new THREE.Clock();
 
-    // Register stat window
-    stats = new Stats();
-    background.appendChild( stats.dom );
-
     // Initialize world
     gamemode = new DefaultGamemode();
     gameRenderer = new GameRenderer(null, document.getElementById('game'), gamemode);
@@ -202,7 +198,6 @@ function animate() {
     updateInputs();
     gamemode.update(deltaTime);
     gameRenderer.render(gamemode);
-    stats.update();
 
     requestAnimationFrame(animate);
 }

@@ -1,16 +1,16 @@
 import { addKeyInput, getInputValue } from "./inputManager.js";
+// Removed PIDController import as it's no longer used for throttle
 
 export class DroneController {
     constructor(drone) {
         this.drone = drone;
+        this.currentThrust = 0.7; // Start at higher throttle for faster movement
+        this.thrustChangeSpeed = 0.25; // Increased speed of thrust changes for more responsive control
+
         this.setupInputs();
     }
 
     setupInputs() {
-        // Throttle control (Up/Down arrows)
-        addKeyInput('droneThrottle', 'ArrowUp', 1, 0);
-        addKeyInput('droneThrottle', 'ArrowDown', -1, 0);
-
         // Roll control (A/D keys)
         addKeyInput('droneRoll', 'KeyA', -1, 0);
         addKeyInput('droneRoll', 'KeyD', 1, 0);
@@ -22,17 +22,30 @@ export class DroneController {
         // Yaw control (Q/E keys)
         addKeyInput('droneYaw', 'KeyQ', -1, 0);
         addKeyInput('droneYaw', 'KeyE', 1, 0);
+
+        // Throttle control (ArrowUp/ArrowDown keys)
+        addKeyInput('Throttle', 'ArrowUp', 1, 0); // Increase throttle
+        addKeyInput('Throttle', 'ArrowDown', -1, 0); // Decrease throttle
     }
 
-    update() {
+    update(dt) { // Assume dt (delta time) is passed to update
         // Get input values
-        const throttleInput = getInputValue('droneThrottle');
         const rollInput = getInputValue('droneRoll');
         const pitchInput = getInputValue('dronePitch');
         const yawInput = getInputValue('droneYaw');
 
+        // Get throttle input (now controlled by ArrowUp/ArrowDown)
+        const throttleInput = getInputValue('Throttle'); // Value is 1 for up, -1 for down, 0 otherwise
+
+        // Gradually adjust thrust based on input
+        if (throttleInput !== 0) {
+            // Corrected throttle logic: Increase thrust with ArrowUp (1), decrease with ArrowDown (-1)
+            this.currentThrust += throttleInput * this.thrustChangeSpeed * dt;
+            this.currentThrust = Math.max(0, Math.min(1, this.currentThrust)); // Clamp thrust between 0 and 1
+        }
+
         // Apply inputs to drone
-        this.drone.setEngineInput(throttleInput * 0.5 + 0.5); // Map -1,1 to 0,1 with better control range
+        this.drone.setEngineInput(this.currentThrust);
         this.drone.setRollInput(rollInput);
         this.drone.setPitchInput(pitchInput);
         this.drone.setYawInput(yawInput);

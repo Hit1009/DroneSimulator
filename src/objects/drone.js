@@ -11,40 +11,82 @@ function createDroneModel() {
     // Create a group to hold all drone parts
     const droneGroup = new THREE.Group();
     
-    // Materials
+    // Enhanced Materials
     const bodyMaterial = new THREE.MeshPhongMaterial({ 
         color: 0x303030, 
         specular: 0x111111, 
-        shininess: 100 
+        shininess: 100,
+        flatShading: true
     });
     const frameMaterial = new THREE.MeshPhongMaterial({ 
         color: 0x505050, 
         specular: 0x222222, 
-        shininess: 30 
+        shininess: 30,
+        flatShading: true
     });
     const rotorMaterial = new THREE.MeshPhongMaterial({ 
         color: 0x222222, 
         transparent: true, 
         opacity: 0.7, 
-        side: THREE.DoubleSide 
+        side: THREE.DoubleSide,
+        flatShading: true
     });
     const accentMaterial = new THREE.MeshPhongMaterial({ 
         color: 0x0088ff, 
         specular: 0x8888ff, 
-        shininess: 100 
+        shininess: 100,
+        flatShading: true
+    });
+    const carbonFiberMaterial = new THREE.MeshPhongMaterial({
+        color: 0x1a1a1a,
+        specular: 0x333333,
+        shininess: 150,
+        flatShading: true
+    });
+    const wiringMaterial = new THREE.MeshPhongMaterial({
+        color: 0xcc0000,
+        emissive: 0x440000,
+        emissiveIntensity: 0.3,
+        shininess: 50
+    });
+    const rubberMaterial = new THREE.MeshPhongMaterial({
+        color: 0x222222,
+        shininess: 10,
+        roughness: 0.8
     });
     
-    // Main body - central hub
-    const bodyGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.8, 8);
+    // Main body - central hub with detailed components
+    const bodyGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.8, 16);
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
     body.rotation.x = Math.PI / 2;
     droneGroup.add(body);
     
-    // Add details to the body
-    const detailGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.2);
+    // Add detailed components to the body
+    const detailGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.2, 4, 2, 4);
     const detail = new THREE.Mesh(detailGeometry, accentMaterial);
     detail.position.set(0, 0, 0.1);
     droneGroup.add(detail);
+    
+    // Add cooling vents
+    for(let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const ventGeometry = new THREE.BoxGeometry(0.2, 0.1, 0.4, 2, 1, 2);
+        const vent = new THREE.Mesh(ventGeometry, carbonFiberMaterial);
+        vent.position.set(Math.cos(angle) * 1.2, Math.sin(angle) * 1.2, 0.2);
+        vent.rotation.z = angle;
+        droneGroup.add(vent);
+    }
+    
+    // Add body panel lines
+    const panelLineGeometry = new THREE.CylinderGeometry(1.55, 1.55, 0.02, 32);
+    const panelLine = new THREE.Mesh(panelLineGeometry, carbonFiberMaterial);
+    panelLine.rotation.x = Math.PI / 2;
+    panelLine.position.z = 0.3;
+    droneGroup.add(panelLine);
+    
+    const panelLine2 = panelLine.clone();
+    panelLine2.position.z = -0.3;
+    droneGroup.add(panelLine2);
     
     // Camera/sensor array at front
     const cameraGeometry = new THREE.SphereGeometry(0.3, 16, 16);
@@ -56,7 +98,7 @@ function createDroneModel() {
     camera.position.set(0.8, 0, 0);
     droneGroup.add(camera);
     
-    // Arms
+    // Detailed Arms with reinforced structure
     const armLength = 4;
     const armPositions = [
         { x: 1, y: 1, z: 0 },   // Front-right
@@ -66,30 +108,101 @@ function createDroneModel() {
     ];
     
     armPositions.forEach((pos, index) => {
-        // Create arm
-        const armGeometry = new THREE.BoxGeometry(0.4, armLength * 0.7, 0.2);
+        // Create reinforced arm structure with connector to body
+        const armGeometry = new THREE.BoxGeometry(0.4, armLength * 0.7, 0.2, 4, 8, 2);
         const arm = new THREE.Mesh(armGeometry, frameMaterial);
         
         // Position and rotate arm
         const angle = Math.atan2(pos.y, pos.x);
-        arm.position.set(pos.x * 1.5, pos.y * 1.5, 0);
+        arm.position.set(pos.x * 1.2, pos.y * 1.2, 0);
         arm.rotation.z = angle;
         droneGroup.add(arm);
         
-        // Create motor housing at end of arm
-        const motorHousingGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 8);
+        // Add reinforced arm connector to body
+        const connectorGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.8, 8);
+        const connector = new THREE.Mesh(connectorGeometry, carbonFiberMaterial);
+        connector.position.set(pos.x * 0.6, pos.y * 0.6, 0);
+        connector.rotation.z = angle;
+        
+        // Add mounting flange to body
+        const flangeGeometry = new THREE.RingGeometry(0.2, 0.3, 16);
+        const flange = new THREE.Mesh(flangeGeometry, carbonFiberMaterial);
+        flange.position.set(pos.x * 0.6, pos.y * 0.6, 0);
+        flange.rotation.x = Math.PI / 2;
+        flange.rotation.z = angle;
+        
+        droneGroup.add(connector);
+        droneGroup.add(flange);
+        
+        // Add arm reinforcement ribs
+        for(let i = 0; i < 3; i++) {
+            const ribGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.3);
+            const rib = new THREE.Mesh(ribGeometry, carbonFiberMaterial);
+            rib.position.set(
+                pos.x * (1.5 + i * 0.7),
+                pos.y * (1.5 + i * 0.7),
+                0
+            );
+            rib.rotation.z = angle;
+            droneGroup.add(rib);
+        }
+        
+        // Create detailed motor housing with cooling fins
+        const motorHousingGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16);
         const motorHousing = new THREE.Mesh(motorHousingGeometry, bodyMaterial);
         motorHousing.rotation.x = Math.PI / 2;
         motorHousing.position.set(pos.x * 3, pos.y * 3, 0);
         droneGroup.add(motorHousing);
         
-        // Create rotor
-        const rotorGeometry = new THREE.CircleGeometry(1.2, 16);
+        // Add cooling fins to motor housing
+        for(let i = 0; i < 8; i++) {
+            const finAngle = (i / 8) * Math.PI * 2;
+            const finGeometry = new THREE.BoxGeometry(0.5, 0.05, 0.2);
+            const fin = new THREE.Mesh(finGeometry, carbonFiberMaterial);
+            fin.position.set(
+                pos.x * 3 + Math.cos(finAngle) * 0.5,
+                pos.y * 3 + Math.sin(finAngle) * 0.5,
+                0
+            );
+            fin.rotation.z = finAngle;
+            droneGroup.add(fin);
+        }
+        
+        // Add motor wiring
+        const wireGeometry = new THREE.TorusGeometry(0.15, 0.03, 8, 16);
+        const wire = new THREE.Mesh(wireGeometry, wiringMaterial);
+        wire.position.set(pos.x * 2.5, pos.y * 2.5, 0.1);
+        wire.rotation.x = Math.PI / 2;
+        droneGroup.add(wire);
+        
+        // Create detailed rotor with blade markings
+        const rotorGeometry = new THREE.CircleGeometry(1.2, 32);
         const rotor = new THREE.Mesh(rotorGeometry, rotorMaterial);
         rotor.position.set(pos.x * 3, pos.y * 3, 0.3);
         // Keep rotors horizontal by not rotating them on X axis
         rotor.userData = { isRotor: true, rotationSpeed: (index % 2 === 0) ? 0.2 : -0.2 };
         droneGroup.add(rotor);
+        
+        // Add rotor center hub
+        const hubGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 12);
+        const hub = new THREE.Mesh(hubGeometry, carbonFiberMaterial);
+        hub.position.set(pos.x * 3, pos.y * 3, 0.35);
+        hub.rotation.x = Math.PI / 2;
+        droneGroup.add(hub);
+        
+        // Add rotor blade markings
+        for(let i = 0; i < 4; i++) {
+            const angle = (i / 4) * Math.PI * 2;
+            const markGeometry = new THREE.BoxGeometry(0.8, 0.02, 0.01);
+            const mark = new THREE.Mesh(markGeometry, carbonFiberMaterial);
+            mark.position.set(
+                pos.x * 3 + Math.cos(angle) * 0.6,
+                pos.y * 3 + Math.sin(angle) * 0.6,
+                0.31
+            );
+            mark.rotation.z = angle;
+            droneGroup.add(mark);
+        }
         
         // Add LED light at end of arm
         const ledGeometry = new THREE.SphereGeometry(0.15, 8, 8);
@@ -103,7 +216,7 @@ function createDroneModel() {
         droneGroup.add(led);
     });
     
-    // Landing gear
+    // Detailed articulated landing gear
     const legPositions = [
         { x: 1, y: 1 },   // Front-right
         { x: 1, y: -1 },  // Front-left
@@ -112,17 +225,56 @@ function createDroneModel() {
     ];
     
     legPositions.forEach(pos => {
-        // Leg strut
-        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+        // Main leg strut with shock absorber and connector to arm
+        const legGeometry = new THREE.CylinderGeometry(0.1, 0.08, 1.2, 12);
         const leg = new THREE.Mesh(legGeometry, frameMaterial);
-        leg.position.set(pos.x * 2, pos.y * 2, -0.8);
+        leg.position.set(pos.x * 2, pos.y * 2, -0.6);
+        leg.rotation.x = Math.PI / 2;
         droneGroup.add(leg);
         
-        // Foot pad
-        const footGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-        const foot = new THREE.Mesh(footGeometry, bodyMaterial);
-        foot.position.set(pos.x * 2, pos.y * 2, -1.5);
+        // Add leg-to-arm connector
+        const legConnectorGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 8);
+        const legConnector = new THREE.Mesh(legConnectorGeometry, carbonFiberMaterial);
+        legConnector.position.set(pos.x * 2, pos.y * 2, -0.2);
+        legConnector.rotation.x = Math.PI / 2;
+        droneGroup.add(legConnector);
+        
+        // Shock absorber cylinder
+        const shockGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.3, 12);
+        const shock = new THREE.Mesh(shockGeometry, carbonFiberMaterial);
+        shock.position.set(pos.x * 2, pos.y * 2, -0.8);
+        droneGroup.add(shock);
+        
+        // Shock absorber piston
+        const pistonGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.4, 12);
+        const piston = new THREE.Mesh(pistonGeometry, frameMaterial);
+        piston.position.set(pos.x * 2, pos.y * 2, -1.0);
+        droneGroup.add(piston);
+        
+        // Foot with rubber pad
+        const footGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 12);
+        const foot = new THREE.Mesh(footGeometry, rubberMaterial);
+        foot.position.set(pos.x * 2, pos.y * 2, -1.3);
+        foot.rotation.x = Math.PI / 2;
         droneGroup.add(foot);
+        
+        // Foot support struts
+        for(let i = 0; i < 3; i++) {
+            const angle = (i / 3) * Math.PI * 2;
+            const strutGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8);
+            const strut = new THREE.Mesh(strutGeometry, frameMaterial);
+            strut.position.set(
+                pos.x * 2 + Math.cos(angle) * 0.1,
+                pos.y * 2 + Math.sin(angle) * 0.1,
+                -1.1
+            );
+            strut.rotation.set(
+                Math.PI / 2 - angle * 0.2,
+                angle,
+                0
+            );
+            droneGroup.add(strut);
+        }
     });
     
     // Scale the entire drone to appropriate size
@@ -195,20 +347,20 @@ class Drone {
 
         this.tempVectorA = new Vector3();
 
-        // Constants - adjusted for realistic drone physics
-        this.dragCoefficient = 0.00025; // Increased drag for better stability
-        this.upLiftCoefficient = 0.0008;  // Reduced lift from forward motion
+         // Constants - adjusted for realistic drone physics
+        this.dragCoefficient = 0.02; // Drastically increased drag
+        this.upLiftCoefficient = 0.001;  // Increased lift to counteract gravity
         this.rightLiftCoefficient = 0.0001;
         this.rotorTorque = 1.2;         // Higher torque for more responsive rotation
-        this.rotorThrust = 50;          // Balanced thrust coefficient
-        this.rotorResponse = 15;        // Faster control response speed
+        this.rotorThrust = 150;         // Reduced base thrust
+        this.rotorResponse = 25;        // Faster control response speed
         this.forwardThrustMultiplier = 0.8; // Forward movement scaling
         
         // Drone-specific properties
         this.rotorSpeed = 0;
         this.maxRotorSpeed = 5;
-        this.rotorAcceleration = 3;
-        this.hoverThreshold = 0.35; // Lower threshold to make altitude control more responsive
+        this.rotorAcceleration = 5;
+        this.hoverThreshold = 0.45; // Lower threshold for more responsive altitude control
         
         // Animation properties
         this.rotors = [];
@@ -268,45 +420,48 @@ class Drone {
     }
 
     updateVelocity(deltaTime) {
-        // Calculate base thrust from engine input (hover thrust)
-        const baseThrust = (this.engineInput - this.hoverThreshold) * this.rotorThrust;
-        
-        // Calculate thrust vectors for each axis based on control inputs
-        const pitchThrust = this.pitchInput * baseThrust * 0.4; // Forward/backward tilt
-        const rollThrust = this.rollInput * baseThrust * 0.4;   // Left/right tilt
-        
-        // Calculate thrust vectors in world space
-        const verticalThrust = baseThrust * Math.cos(Math.abs(this.pitchRotationRate)) * Math.cos(Math.abs(this.rollRotationRate));
-        const forwardThrust = -pitchThrust * Math.cos(Math.abs(this.rollRotationRate));
-        const rightThrust = rollThrust;
-        
-        // Apply thrusts in their respective directions
-        this.tempVectorA.copy(this.upVector).multiplyScalar(verticalThrust);
-        this.velocity.add(this.tempVectorA);
-        
-        this.tempVectorA.copy(this.forwardVector).multiplyScalar(forwardThrust);
-        this.velocity.add(this.tempVectorA);
-        
-        this.tempVectorA.copy(this.rightVector).multiplyScalar(rightThrust);
-        this.velocity.add(this.tempVectorA);
-        
-        // Apply gravity
-        this.velocity.z -= 9.81 * deltaTime * 30;
-        
-        // Apply air resistance (quadratic drag)
+        // Calculate total thrust magnitude
+        const totalThrustMagnitude = Math.max(0, this.engineInput) * this.rotorThrust;
+
+        // Calculate the primary thrust direction vector based on tilting
+        // Start with the up vector, then tilt it based on pitch/roll inputs
+        let thrustDirection = new THREE.Vector3().copy(this.upVector);
+        // Note: Negative pitchInput (stick back) tilts drone back, positive (stick forward) tilts forward.
+        // We want positive pitchInput to add a *forward* thrust component.
+        let forwardComponent = new THREE.Vector3().copy(this.forwardVector).multiplyScalar(-this.pitchInput * 0.6); // Adjust multiplier as needed
+        let rightComponent = new THREE.Vector3().copy(this.rightVector).multiplyScalar(this.rollInput * 0.6);   // Adjust multiplier as needed
+        thrustDirection.add(forwardComponent).add(rightComponent).normalize(); // Combine and normalize
+
+        // Calculate net force vector
+        const netForce = new THREE.Vector3();
+
+        // 1. Calculate Thrust Force
+        const thrustForce = new THREE.Vector3().copy(thrustDirection).multiplyScalar(totalThrustMagnitude);
+        netForce.add(thrustForce);
+
+        // 2. Calculate Gravity Force
+        const gravityMultiplier = 5; // Keep adjusted gravity
+        const gravityForce = new THREE.Vector3(0, 0, -9.81 * gravityMultiplier); // Force is constant
+        netForce.add(gravityForce);
+
+        // 3. Calculate Drag Force
         const velocityMagnitude = this.velocity.length();
         if (velocityMagnitude > 0) {
-            const dragForce = this.dragCoefficient * velocityMagnitude * velocityMagnitude;
-            this.tempVectorA.copy(this.velocity).normalize().multiplyScalar(-dragForce);
-            this.velocity.add(this.tempVectorA);
+            const dragForceMagnitude = this.dragCoefficient * velocityMagnitude * velocityMagnitude; // Quadratic drag
+            const dragForceVector = new THREE.Vector3().copy(this.velocity).normalize().multiplyScalar(-dragForceMagnitude);
+            netForce.add(dragForceVector);
         }
-        
+
+        // 4. Apply Net Force to Velocity ( F = ma -> a = F/m -> dv = a*dt = (F/m)*dt )
+        // Assuming mass m = 1 for simplicity
+        this.velocity.addScaledVector(netForce, deltaTime);
+
         // Update relative velocity for debug
         this.relativeVelocity.copy(this.velocity);
-        
-        // Keep track of lift values for debug
-        this.upLift = verticalThrust;
-        this.rightLift = rightThrust;
+
+        // Keep track of lift values for debug (more accurate)
+        this.upLift = thrustForce.dot(this.upVector); // Vertical component of thrust
+        this.rightLift = thrustForce.dot(this.rightVector); // Rightward component of thrust
     }
 
     applyPosition() {

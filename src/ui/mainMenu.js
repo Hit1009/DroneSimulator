@@ -14,7 +14,7 @@ function buildContainers() {
     interfaceBackground.id = "interfaceBackground";
     const menuBarContainer = document.createElement("div");
     const menuBarTitle = document.createElement("h1");
-    menuBarTitle.innerText = "THREE FLIGHT SIMULATOR";
+    menuBarTitle.innerText = "DRONE SIMULATOR";
     menuBarContainer.id = "menuBar";
 
     menuBar = document.createElement("div");
